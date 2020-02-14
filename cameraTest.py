@@ -26,6 +26,8 @@ net = cv2.dnn.readNetFromCaffe(args["prototxt"], args["model"])
 # initialize the video stream and allow the camera sensor to warm up
 print("[INFO] starting video stream...")
 vs = VideoStream(src=0).start()
+vs.resolution = (640, 480)
+vs.framerate = 15
 time.sleep(2.0)
 
 cv2.namedWindow("Didux.io", cv2.WINDOW_NORMAL)
@@ -66,6 +68,7 @@ while True:
                       (0, 0, 255), 2)
         cv2.putText(frame, text, (startX, y),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 2)
+
 
     # show the output frame
     cv2.imshow("Didux.io", frame)
