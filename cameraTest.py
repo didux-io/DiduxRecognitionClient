@@ -4,17 +4,15 @@ Haar Cascade Face detection with OpenCV
     Visit original post: https://pythonprogramming.net/haar-cascade-face-eye-detection-python-opencv-tutorial/
 Adapted by Marcelo Rovai - MJRoBot.org @ 7Feb2018
 '''
-
-from imutils.video import VideoStream
 import numpy as np
 import argparse
-import imutils
 import time
 import cv2
 
 
 # construct the argument parse and parse the arguments
 from utils.fps import FPS
+from utils.stream import WebcamVideoStream
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-p", "--prototxt", default="models/deploy.prototxt.txt", help="path to Caffe 'deploy' prototxt file")
@@ -29,9 +27,8 @@ print("[INFO] loading model...")
 net = cv2.dnn.readNetFromCaffe(args["prototxt"], args["model"])
 # initialize the video stream and allow the camera sensor to warm up
 print("[INFO] starting video stream...")
-vs = VideoStream(src=0).start()
+vs = WebcamVideoStream(src=0).start()
 vs.resolution = (640, 480)
-vs.framerate = 10
 time.sleep(2.0)
 
 cv2.namedWindow("Didux.io", cv2.WINDOW_NORMAL)
