@@ -14,10 +14,14 @@ import cv2
 
 
 # construct the argument parse and parse the arguments
+from utils.fps import FPS
+
 ap = argparse.ArgumentParser()
 ap.add_argument("-p", "--prototxt", default="models/deploy.prototxt.txt", help="path to Caffe 'deploy' prototxt file")
 ap.add_argument("-m", "--model", default="models/res10_300x300_ssd_iter_140000.caffemodel", help="path to Caffe pre-trained model")
 ap.add_argument("-c", "--confidence", type=float, default=0.5, help="minimum probability to filter weak detections")
+ap.add_argument("-n", "--num-frames", type=int, default=120, help="# of frames to loop over for FPS test")
+ap.add_argument("-d", "--display", type=int, default=-1, help="Whether or not frames should be displayed")
 args = vars(ap.parse_args())
 
 # load our serialized model from disk
@@ -27,13 +31,15 @@ net = cv2.dnn.readNetFromCaffe(args["prototxt"], args["model"])
 print("[INFO] starting video stream...")
 vs = VideoStream(src=0).start()
 vs.resolution = (640, 480)
-vs.framerate = 15
+vs.framerate = 10
 time.sleep(2.0)
 
 cv2.namedWindow("Didux.io", cv2.WINDOW_NORMAL)
+fps = FPS().start()
 
 # loop over the frames from the video stream
 while True:
+
     frame = vs.read()
 
     # grab the frame dimensions and convert it to a blob
@@ -69,16 +75,22 @@ while True:
         cv2.putText(frame, text, (startX, y),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 2)
 
-
     # show the output frame
     cv2.imshow("Didux.io", frame)
     cv2.setWindowProperty('Didux.io', cv2.WND_PROP_ASPECT_RATIO, cv2.WINDOW_FREERATIO)
     cv2.setWindowProperty('Didux.io', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+    fps.update()
     if cv2.waitKey(30) & 0xFF == ord('q'):
         break
+    if fps._numFrames < args["num_frames"]:
+        fps.update()
+    if fps._numFrames == args["num_frames"]:
+        # stop the timer and display FPS information
+        fps.stop()
+        print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
+        print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
+        fps.start()
 
-
-# do a bit of cleanup
 cv2.destroyAllWindows()
 cv2.waitKey(1)
 vs.stop()
